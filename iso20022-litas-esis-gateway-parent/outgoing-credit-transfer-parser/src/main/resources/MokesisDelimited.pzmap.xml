@@ -2,6 +2,7 @@
 <!DOCTYPE PZMAP SYSTEM	"http://flatpack.sourceforge.net/flatpack.dtd" >
 <PZMAP>
 	<COLUMN name="PmtInfId" />
+	<COLUMN name="CreDtTm" />
 	<COLUMN name="ReqdExctnDt" />
 	<COLUMN name="SvcLvl" />
 	<COLUMN name="DbtrAcctIdIBAN" />
