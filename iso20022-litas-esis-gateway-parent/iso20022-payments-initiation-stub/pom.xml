@@ -1,0 +1,27 @@
+<project xmlns="http://maven.apache.org/POM/4.0.0" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:schemaLocation="http://maven.apache.org/POM/4.0.0 http://maven.apache.org/xsd/maven-4.0.0.xsd">
+  <modelVersion>4.0.0</modelVersion>
+  <parent>
+    <artifactId>iso20022-litas-esis-gateway-parent</artifactId>
+    <groupId>lt.itdbaltics.unifi.gateway</groupId>
+    <version>0.0.1-SNAPSHOT</version>
+  </parent>
+  <groupId>lt.itdbaltics.unifi.gateway</groupId>
+  <artifactId>iso20022-payments-initiation-stub</artifactId>
+  <version>0.0.1-SNAPSHOT</version>
+  <dependencies>
+  	<dependency>
+  		<groupId>lt.itdbaltics.unifi.services.pain</groupId>
+  		<artifactId>iso20022-payments-initiation-client</artifactId>
+  		<version>0.0.1-SNAPSHOT</version>
+  		<type>jar</type>
+  		<scope>compile</scope>
+  	</dependency>
+  	<dependency>
+  		<groupId>lt.itdbaltics.unifi.gateway</groupId>
+  		<artifactId>outgoing-credit-transfer-parser</artifactId>
+  		<version>0.0.1-SNAPSHOT</version>
+  		<type>jar</type>
+  		<scope>compile</scope>
+  	</dependency>
+  </dependencies>
+</project>
