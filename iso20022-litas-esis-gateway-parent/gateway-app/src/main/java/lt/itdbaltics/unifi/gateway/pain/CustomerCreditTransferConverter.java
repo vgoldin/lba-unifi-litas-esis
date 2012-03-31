@@ -1,4 +1,4 @@
-package lt.itdbaltics.unif.gateway.pain;
+package lt.itdbaltics.unifi.gateway.pain;
 
 import iso.std.iso._20022.tech.xsd.pain_001_001.AccountIdentification4Choice;
 import iso.std.iso._20022.tech.xsd.pain_001_001.ActiveOrHistoricCurrencyAndAmount;
@@ -25,14 +25,16 @@ import iso.std.iso._20022.tech.xsd.pain_001_001.Purpose2Choice;
 import iso.std.iso._20022.tech.xsd.pain_001_001.RemittanceInformation5;
 import iso.std.iso._20022.tech.xsd.pain_001_001.ServiceLevel8Choice;
 
-import java.io.StringWriter;
-import java.io.UnsupportedEncodingException;
+import java.io.OutputStream;
 import java.math.BigDecimal;
 import java.text.DateFormat;
 import java.text.ParseException;
 import java.text.SimpleDateFormat;
 import java.util.Date;
 import java.util.GregorianCalendar;
+import java.util.Iterator;
+import java.util.List;
+import java.util.Map;
 import java.util.UUID;
 
 import javax.xml.bind.JAXBContext;
@@ -55,70 +57,38 @@ import javax.xml.transform.stream.StreamResult;
 
 import org.w3c.dom.Document;
 
-import net.sf.flatpack.DataSet;
-
-import lt.itdbaltics.unifi.gateway.test.UnmarshalMokesisTest;
 import lt.lba.xmlns._2011._11.unifi.customercredittransferinitiation.v03.ObjectFactory;
 import lt.lba.xmlns._2011._11.unifi.customercredittransferinitiation.v03.SignableDocumentType;
 
-public class StubMain {
-	private static final int CdtTrfTxInfPmtId = 0;
-	private static final int ReqdExctnDt = 2;
-	private static final int PmtTpInfInstrPrty = 3;
-	private static final int DbtrAcctIdIBAN = 4;
-	private static final int DbtrNm = 5;
-	private static final int DbtrIdOtherId = 6;
-	private static final int DbtrAgtFinInstnIdBIC = 7;
-	private static final int DbtrIdOtherIdCUST = 8;
-	private static final int UltmtDbtrIdOtherIdIBAN = 9;
-	private static final int UltmtDbtrNm = 10;
-	private static final int UltmtDbtrIdOtherId = 11;
-	private static final int CdtrAcctIdIBAN = 12;
-	private static final int CdtrNm = 13;
-	private static final int CdtrIdOtherId = 14;
-	private static final int CdtrAgtFinInstnIdBIC = 15;
-	private static final int CdtrIdOtherIdCUST = 16;
-	private static final int UltmtCdtrIdOtherIdIBAN = 17;
-	private static final int UltmtCdtrNm = 18;
-	private static final int UltmtCdtrIdOtherId = 19;
-	private static final int AmtInstdAmt = 20;
-	private static final int AmtInstdAmtCcy = 21;
-	private static final int PurpPrtry = 22;
-	private static final int RmtInfUstrd = 23;
-	
+public class CustomerCreditTransferConverter {
 	private static final String SVCLVL_CODE_URGENT = "URGP";
 	private static final String SVCLVL_CODE_NONURGENT = "NURG";
-	
+
 	private static final String PERSON_ID_CODE_CUST = "CUST";
 	private static final String ULTIMATE_PARTY_ID_CODE_IBAN = "IBAN";
-	private static final String ESIS_DATE_FORMAT = "yyyyMMdd"; 
-	
-	public StubMain() throws UnsupportedEncodingException, DatatypeConfigurationException, ParseException, Exception, Exception {
-	}
+	private static final String ESIS_DATE_FORMAT = "yyyyMMdd";
 
-	public void transformMokesisToCustomerCreditTransfer() throws UnsupportedEncodingException, DatatypeConfigurationException, ParseException, ParserConfigurationException, JAXBException,
-			TransformerFactoryConfigurationError, TransformerException {
-		DataSet ds = UnmarshalMokesisTest.parseToDataSet(UnmarshalMokesisTest.getDefaultMapping(), UnmarshalMokesisTest.getDefaultDataFile());
-
-		final String[] colNames = ds.getColumns();
-
-		GregorianCalendar calendar = new GregorianCalendar();
-		calendar.setTime(new Date());
-		XMLGregorianCalendar createDate = DatatypeFactory.newInstance().newXMLGregorianCalendar(calendar);
+	public static void convertMokesisToCustomerCreditTransfer(List<Map<String, Object>> rows, OutputStream stream) {
+		
+		XMLGregorianCalendar createDate = createXMLGregorianCalendar(new Date());
 
 		GroupHeader32 header = new GroupHeader32();
 		header.setMsgId(UUID.randomUUID().toString().replaceAll("-", ""));
 		header.setCreDtTm(createDate);
-		header.setNbOfTxs(Integer.toString(ds.getRowCount()));
+		header.setNbOfTxs(Integer.toString(rows.size()));
 
 		CustomerCreditTransferInitiationV03 credit = new CustomerCreditTransferInitiationV03();
 		credit.setGrpHdr(header);
 
-		while (ds.next()) {
+		Iterator<Map<String, Object>> it = rows.iterator();
+
+		while (it.hasNext()) {
+			Map<String, Object> row = it.next();
+
 			PaymentTypeInformation19 type = new PaymentTypeInformation19();
 			ServiceLevel8Choice svcLvl = new ServiceLevel8Choice();
-			
-			int priority = ds.getInt(colNames[PmtTpInfInstrPrty]);
+
+			int priority = Integer.valueOf((String) row.get(Columns.PmtTpInfInstrPrty));
 			if (priority == 1) {
 				svcLvl.setCd(SVCLVL_CODE_NONURGENT);
 			} else if (priority == 2) {
@@ -126,7 +96,6 @@ public class StubMain {
 			}
 			type.setSvcLvl(svcLvl);
 
-			
 			// -- create new transfer payment instruction
 			PaymentInstructionInformation3 instr = new PaymentInstructionInformation3();
 			instr.setPmtInfId(UUID.randomUUID().toString().replaceAll("-", ""));
@@ -134,86 +103,94 @@ public class StubMain {
 			instr.setPmtTpInf(type);
 
 			// -- set requested execution date
-			String reqdExctnDtStr = ds.getString(colNames[ReqdExctnDt]);
+			String reqdExctnDtStr = (String) row.get(Columns.ReqdExctnDt);
 			if (hasValue(reqdExctnDtStr)) {
 				instr.setReqdExctnDt(getReqdExctnDt(reqdExctnDtStr));
 			}
 
 			// -- set debtor account
 			AccountIdentification4Choice dbtrAcctIdIBAN = new AccountIdentification4Choice();
-			dbtrAcctIdIBAN.setIBAN(ds.getString(colNames[DbtrAcctIdIBAN]));
+			dbtrAcctIdIBAN.setIBAN((String) row.get(Columns.DbtrAcctIdIBAN));
 
 			CashAccount16 dbtrAcct = new CashAccount16();
 			dbtrAcct.setId(dbtrAcctIdIBAN);
 			instr.setDbtrAcct(dbtrAcct);
 
 			// -- set debtor
-			PartyIdentification32 dbtr = createParty(ds.getString(colNames[DbtrNm]), ds.getString(colNames[DbtrIdOtherId]), ds.getString(colNames[DbtrIdOtherIdCUST]), PERSON_ID_CODE_CUST);
+			PartyIdentification32 dbtr = createParty((String) row.get(Columns.DbtrNm), (String) row.get(Columns.DbtrIdOtherId), (String) row.get(Columns.DbtrIdOtherIdCUST),
+					PERSON_ID_CODE_CUST);
 			instr.setDbtr(dbtr);
 
 			// -- set debtor agent
-			String dbtrAgtFinInstnIdBICStr = ds.getString(colNames[DbtrAgtFinInstnIdBIC]);
+			String dbtrAgtFinInstnIdBICStr = (String) row.get(Columns.DbtrAgtFinInstnIdBIC);
 			if (hasValue(dbtrAgtFinInstnIdBICStr)) {
 				instr.setDbtrAgt(getFinInstnId(dbtrAgtFinInstnIdBICStr));
 			}
-			
+
 			// -- set ultimate debtor
-			PartyIdentification32 ultmtDbtr = createParty(ds.getString(colNames[UltmtDbtrNm]), ds.getString(colNames[UltmtDbtrIdOtherId]), ds.getString(colNames[UltmtDbtrIdOtherIdIBAN]), ULTIMATE_PARTY_ID_CODE_IBAN);
+			PartyIdentification32 ultmtDbtr = createParty((String) row.get(Columns.UltmtDbtrNm), (String) row.get(Columns.UltmtDbtrIdOtherId),
+					(String) row.get(Columns.UltmtDbtrIdOtherIdIBAN), ULTIMATE_PARTY_ID_CODE_IBAN);
 			if (ultmtDbtr != null) {
 				instr.setUltmtDbtr(ultmtDbtr);
 			}
-			
+
 			// -- set creditor account
 			AccountIdentification4Choice cdtrAcctIdIBAN = new AccountIdentification4Choice();
-			cdtrAcctIdIBAN.setIBAN(ds.getString(colNames[CdtrAcctIdIBAN]));
+			cdtrAcctIdIBAN.setIBAN((String) row.get(Columns.CdtrAcctIdIBAN));
 
-			
 			CreditTransferTransactionInformation10 cdtTrfTxInf = new CreditTransferTransactionInformation10();
 
 			// -- set credit transfer number
-			String cdtTrfTxInfPmtIdStr = ds.getString(colNames[CdtTrfTxInfPmtId]);
+			String cdtTrfTxInfPmtIdStr = (String) row.get(Columns.CdtTrfTxInfPmtId);
 			PaymentIdentification1 pmtId = new PaymentIdentification1();
 			pmtId.setInstrId(cdtTrfTxInfPmtIdStr);
 			pmtId.setEndToEndId(cdtTrfTxInfPmtIdStr);
 			cdtTrfTxInf.setPmtId(pmtId);
-			
+
 			// -- set creditor
-			PartyIdentification32 cdtr = createParty(ds.getString(colNames[CdtrNm]), ds.getString(colNames[CdtrIdOtherId]), ds.getString(colNames[CdtrIdOtherIdCUST]), PERSON_ID_CODE_CUST);
-			cdtTrfTxInf.setCdtr(cdtr);			
-			
+			PartyIdentification32 cdtr = createParty((String) row.get(Columns.CdtrNm), (String) row.get(Columns.CdtrIdOtherId), (String) row.get(Columns.CdtrIdOtherIdCUST),
+					PERSON_ID_CODE_CUST);
+			cdtTrfTxInf.setCdtr(cdtr);
+
 			// -- set creditor agent
-			String cdtrAgtFinInstnIdBICStr = ds.getString(colNames[CdtrAgtFinInstnIdBIC]);
+			String cdtrAgtFinInstnIdBICStr = (String) row.get(Columns.CdtrAgtFinInstnIdBIC);
 			if (hasValue(cdtrAgtFinInstnIdBICStr)) {
 				cdtTrfTxInf.setCdtrAgt(getFinInstnId(cdtrAgtFinInstnIdBICStr));
 			}
-			
+
 			// -- set ultimate creditor
-			PartyIdentification32 ultmtCdtr = createParty(ds.getString(colNames[UltmtCdtrNm]), ds.getString(colNames[UltmtCdtrIdOtherId]), ds.getString(colNames[UltmtCdtrIdOtherIdIBAN]), ULTIMATE_PARTY_ID_CODE_IBAN);
+			PartyIdentification32 ultmtCdtr = createParty((String) row.get(Columns.UltmtCdtrNm), (String) row.get(Columns.UltmtCdtrIdOtherId),
+					(String) row.get(Columns.UltmtCdtrIdOtherIdIBAN), ULTIMATE_PARTY_ID_CODE_IBAN);
 			if (ultmtCdtr != null) {
 				cdtTrfTxInf.setUltmtCdtr(ultmtCdtr);
 			}
-			
+
 			// -- set amount
-			AmountType3Choice amt = createAmount(ds.getString(colNames[AmtInstdAmt]), ds.getString(colNames[AmtInstdAmtCcy]));
+			AmountType3Choice amt = createAmount((String) row.get(Columns.AmtInstdAmt), (String) row.get(Columns.AmtInstdAmtCcy));
 			cdtTrfTxInf.setAmt(amt);
-			
-			// -- set purpose code (purpose is not the same as remittance! Remittance is to identify particular instruction relation to the particular invoice, whenever purpose is a static value, defining the category of the payment)
-			String purpPrtryStr = ds.getString(colNames[PurpPrtry]);
+
+			// -- set purpose code (purpose is not the same as remittance!
+			// Remittance is to identify particular instruction relation to the
+			// particular invoice, whenever purpose is a static value, defining
+			// the category of the payment)
+			String purpPrtryStr = (String) row.get(Columns.PurpPrtry);
 			if (hasValue(purpPrtryStr)) {
 				Purpose2Choice purp = new Purpose2Choice();
 				purp.setPrtry(purpPrtryStr);
-				
+
 				cdtTrfTxInf.setPurp(purp);
 			}
-			
+
 			// -- set unstructured remittance information
-			RemittanceInformation5 rmtInf = createRmtInf(ds.getString(colNames[RmtInfUstrd]));
+			RemittanceInformation5 rmtInf = createRmtInf((String) row.get(Columns.RmtInfUstrd));
 			cdtTrfTxInf.setRmtInf(rmtInf);
-			
-			// -- add credit transfer transaction information (credit part) to the instruction
+
+			// -- add credit transfer transaction information (credit part) to
+			// the instruction
 			instr.getCdtTrfTxInf().add(cdtTrfTxInf);
-			
-			// -- add instruction to the list of instructions in the current document
+
+			// -- add instruction to the list of instructions in the current
+			// document
 			credit.getPmtInf().add(instr);
 		}
 
@@ -223,91 +200,115 @@ public class StubMain {
 		SignableDocumentType signableType = new SignableDocumentType();
 		signableType.setDocument(document);
 
-		printResultingXML(signableType);
+		serializeResults(signableType, stream);
 	}
 
-	private RemittanceInformation5 createRmtInf(String string) {
-		RemittanceInformation5 rmtInf = new RemittanceInformation5();
+	private static XMLGregorianCalendar createXMLGregorianCalendar(Date currentDateTime) {
+		GregorianCalendar calendar = new GregorianCalendar();
+		calendar.setTime(currentDateTime);
 		
-		// -- maximum allowed length is 300, splitting the string into chunks of 140 each
+		XMLGregorianCalendar createDate;
+		try {
+			createDate = DatatypeFactory.newInstance().newXMLGregorianCalendar(calendar);
+		} catch (DatatypeConfigurationException e) {
+			throw new RuntimeException(e);
+		}
+		
+		return createDate;
+	}
+
+	private static RemittanceInformation5 createRmtInf(String string) {
+		RemittanceInformation5 rmtInf = new RemittanceInformation5();
+
+		// -- maximum allowed length is 300, splitting the string into chunks of
+		// 140 each
 		if (string.length() > 140) {
 			String s1 = string.substring(0, 140);
 			rmtInf.getUstrd().add(s1);
-			
+
 			String s2 = string.substring(140);
 			rmtInf.getUstrd().add(s2.substring(0, 140));
-			
+
 			if (s2.length() > 140) {
 				String s3 = s2.substring(140);
 				if (s3.length() > 140) {
 					s3 = s3.substring(0, 140);
 				}
-				
+
 				rmtInf.getUstrd().add(s3);
 			}
 		} else {
 			rmtInf.getUstrd().add(string);
 		}
-		
+
 		return rmtInf;
 	}
 
-	private AmountType3Choice createAmount(String instdAmtStr, String instdAmtCcy) {
+	private static AmountType3Choice createAmount(String instdAmtStr, String instdAmtCcy) {
 		String d = instdAmtStr.substring(0, instdAmtStr.length() - 2) + "." + instdAmtStr.substring(instdAmtStr.length() - 2);
-		
+
 		BigDecimal amount = BigDecimal.valueOf(Double.valueOf(d));
-		
+
 		AmountType3Choice amt = new AmountType3Choice();
 		ActiveOrHistoricCurrencyAndAmount instdAmt = new ActiveOrHistoricCurrencyAndAmount();
 		instdAmt.setValue(amount);
 		instdAmt.setCcy(instdAmtCcy);
-		
+
 		amt.setInstdAmt(instdAmt);
-		
+
 		return amt;
 	}
 
-	private PartyIdentification32 createParty(String partyNm, String partyMainId, String partyAdditionalId, String partyAdditionalIdCode) {
+	private static PartyIdentification32 createParty(String partyNm, String partyMainId, String partyAdditionalId, String partyAdditionalIdCode) {
 		PartyIdentification32 party = null;
-		
+
 		if (hasValue(partyNm) || hasValue(partyMainId) || hasValue(partyAdditionalId)) {
 			party = new PartyIdentification32();
-			
+
 			if (hasValue(partyNm)) {
 				party.setNm(partyNm);
 			}
-			
+
 			Party6Choice partyId = createPartyId(partyMainId, partyAdditionalId, partyAdditionalIdCode);
 			if (partyId != null) {
 				party.setId(partyId);
 			}
 		}
-		
+
 		return party;
 	}
 
-	private void printResultingXML(SignableDocumentType signableType) throws ParserConfigurationException, JAXBException, TransformerConfigurationException,
-			TransformerFactoryConfigurationError, TransformerException {
-		DocumentBuilderFactory dbfac = DocumentBuilderFactory.newInstance();
-		DocumentBuilder docBuilder = dbfac.newDocumentBuilder();
-		Document doc = docBuilder.newDocument();
+	private static void serializeResults(SignableDocumentType signableType, OutputStream stream) {
+		try {
+			DocumentBuilderFactory dbfac = DocumentBuilderFactory.newInstance();
+			DocumentBuilder docBuilder = dbfac.newDocumentBuilder();
+			Document doc = docBuilder.newDocument();
 
-		ObjectFactory of = new ObjectFactory();
-		JAXBElement<SignableDocumentType> signable = of.createSignableDocument(signableType);
-		signable.setValue(signableType);
+			ObjectFactory of = new ObjectFactory();
+			JAXBElement<SignableDocumentType> signable = of.createSignableDocument(signableType);
+			signable.setValue(signableType);
 
-		JAXBContext context = JAXBContext.newInstance(SignableDocumentType.class);
-		Marshaller marshaller = context.createMarshaller();
-		marshaller.marshal(signable, doc);
+			JAXBContext context = JAXBContext.newInstance(SignableDocumentType.class);
+			Marshaller marshaller = context.createMarshaller();
+			marshaller.marshal(signable, doc);
 
-		Transformer transformer = TransformerFactory.newInstance().newTransformer();
-		StreamResult result = new StreamResult(new StringWriter());
-		transformer.transform(new DOMSource(doc), result);
-
-		System.out.println(result.getWriter().toString());
+			Transformer transformer = TransformerFactory.newInstance().newTransformer();
+			StreamResult result = new StreamResult(stream);
+			transformer.transform(new DOMSource(doc), result);
+		} catch (ParserConfigurationException e) {
+			throw new RuntimeException(e);
+		} catch (JAXBException e) {
+			throw new RuntimeException(e);
+		} catch (TransformerConfigurationException e) {
+			throw new RuntimeException(e);
+		} catch (TransformerFactoryConfigurationError e) {
+			throw new RuntimeException(e);
+		} catch (TransformerException e) {
+			throw new RuntimeException(e);
+		}
 	}
 
-	private BranchAndFinancialInstitutionIdentification4 getFinInstnId(String finInstnIdBICStr) {
+	private static BranchAndFinancialInstitutionIdentification4 getFinInstnId(String finInstnIdBICStr) {
 		BranchAndFinancialInstitutionIdentification4 finInstn = new BranchAndFinancialInstitutionIdentification4();
 		FinancialInstitutionIdentification7 finInstnIdBIC = new FinancialInstitutionIdentification7();
 		finInstnIdBIC.setBIC(finInstnIdBICStr);
@@ -316,7 +317,7 @@ public class StubMain {
 		return finInstn;
 	}
 
-	private Party6Choice createPartyId(String partyIdOtherIdStr, String partyIdOtherIdAdditionalStr, String additionalSchmeNmCodeCdStr) {
+	private static Party6Choice createPartyId(String partyIdOtherIdStr, String partyIdOtherIdAdditionalStr, String additionalSchmeNmCodeCdStr) {
 
 		Party6Choice partyIdOtherId = null;
 
@@ -360,11 +361,11 @@ public class StubMain {
 		return partyIdOtherId;
 	}
 
-	private boolean hasValue(String str) {
+	private static  boolean hasValue(String str) {
 		return str != null && !str.isEmpty();
 	}
 
-	private GenericOrganisationIdentification1 getOrganisationCustId(String partyIdOtherIdCustStr, String schmeNmCodeCdStr) {
+	private static GenericOrganisationIdentification1 getOrganisationCustId(String partyIdOtherIdCustStr, String schmeNmCodeCdStr) {
 		GenericOrganisationIdentification1 otherCustId = new GenericOrganisationIdentification1();
 		otherCustId.setId(partyIdOtherIdCustStr);
 
@@ -377,50 +378,49 @@ public class StubMain {
 		}
 
 		otherCustId.setSchmeNm(schmeNmCodeCd);
-		
+
 		return otherCustId;
 	}
 
-	private GenericPersonIdentification1 getPersonAdditionalId(String otherIdAdditionalStr, String schmeNmCodeCdStr) {
+	private static GenericPersonIdentification1 getPersonAdditionalId(String otherIdAdditionalStr, String schmeNmCodeCdStr) {
 		GenericPersonIdentification1 otherAdditionalId = new GenericPersonIdentification1();
 		otherAdditionalId.setId(otherIdAdditionalStr);
 
 		PersonIdentificationSchemeName1Choice schmeNmCodeCd = new PersonIdentificationSchemeName1Choice();
-		
+
 		if (!isProprietaryCode(schmeNmCodeCdStr)) {
 			schmeNmCodeCd.setCd(schmeNmCodeCdStr);
 		} else {
 			schmeNmCodeCd.setPrtry(schmeNmCodeCdStr);
 		}
-		
+
 		otherAdditionalId.setSchmeNm(schmeNmCodeCd);
-		
+
 		return otherAdditionalId;
 	}
 
-	private boolean isProprietaryCode(String schmeNmCodeCdStr) {
-		// -- in the future we can create a list of used Codes from external list and check against the list instead
+	private static boolean isProprietaryCode(String schmeNmCodeCdStr) {
+		// -- in the future we can create a list of used Codes from external
+		// list and check against the list instead
 		return !schmeNmCodeCdStr.equals(PERSON_ID_CODE_CUST);
 	}
 
-	private XMLGregorianCalendar getReqdExctnDt(String reqdExctnDtStr) throws DatatypeConfigurationException, ParseException {
-		DateFormat formatter = new SimpleDateFormat(ESIS_DATE_FORMAT);
-		Date date = (Date) formatter.parse(reqdExctnDtStr);
+	private static XMLGregorianCalendar getReqdExctnDt(String reqdExctnDtStr) {
+		XMLGregorianCalendar reqdExctnDt = null;
+		try {
+			DateFormat formatter = new SimpleDateFormat(ESIS_DATE_FORMAT);
+			Date date = (Date) formatter.parse(reqdExctnDtStr);
 
-		GregorianCalendar calendar = new GregorianCalendar();
-		calendar.setTime(date);
-		XMLGregorianCalendar reqdExctnDt = DatatypeFactory.newInstance().newXMLGregorianCalendar(calendar);
-
+			GregorianCalendar calendar = new GregorianCalendar();
+			calendar.setTime(date);
+			
+			reqdExctnDt = DatatypeFactory.newInstance().newXMLGregorianCalendar(calendar);
+		} catch (ParseException e) {
+			throw new RuntimeException(e);
+		} catch (DatatypeConfigurationException e) {
+			throw new RuntimeException(e);
+		}
+		
 		return reqdExctnDt;
 	}
-
-	/**
-	 * @param args
-	 * @throws UnsupportedEncodingException
-	 */
-	public static void main(String[] args) throws Exception {
-		StubMain stub = new StubMain();
-		stub.transformMokesisToCustomerCreditTransfer();
-	}
-
 }

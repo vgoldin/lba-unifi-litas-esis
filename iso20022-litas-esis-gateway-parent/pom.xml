@@ -5,8 +5,7 @@
   <version>0.0.1-SNAPSHOT</version>
   <packaging>pom</packaging>
   <modules>
-  	<module>outgoing-credit-transfer-parser</module>
   	<module>iso20022-payments-initiation-client</module>
-  	<module>iso20022-payments-initiation-stub</module>
+  	<module>gateway-app</module>
   </modules>
 </project>
