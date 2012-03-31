@@ -21,9 +21,9 @@ import iso.std.iso._20022.tech.xsd.pain_001_001.PaymentMethod3Code;
 import iso.std.iso._20022.tech.xsd.pain_001_001.PaymentTypeInformation19;
 import iso.std.iso._20022.tech.xsd.pain_001_001.PersonIdentification5;
 import iso.std.iso._20022.tech.xsd.pain_001_001.PersonIdentificationSchemeName1Choice;
-import iso.std.iso._20022.tech.xsd.pain_001_001.Priority2Code;
 import iso.std.iso._20022.tech.xsd.pain_001_001.Purpose2Choice;
 import iso.std.iso._20022.tech.xsd.pain_001_001.RemittanceInformation5;
+import iso.std.iso._20022.tech.xsd.pain_001_001.ServiceLevel8Choice;
 
 import java.io.StringWriter;
 import java.io.UnsupportedEncodingException;
@@ -64,7 +64,6 @@ import lt.lba.xmlns._2011._11.unifi.customercredittransferinitiation.v03.Signabl
 public class StubMain {
 	private static final String ULTIMATE_PARTY_ID_CODE_IBAN = "IBAN";
 	private static final int CdtTrfTxInfPmtId = 0;
-	private static final int CreDtTm = 1;
 	private static final int ReqdExctnDt = 2;
 	private static final int PmtTpInfInstrPrty = 3;
 	private static final int DbtrAcctIdIBAN = 4;
@@ -87,6 +86,9 @@ public class StubMain {
 	private static final int AmtInstdAmtCcy = 21;
 	private static final int PurpPrtry = 22;
 	private static final int RmtInfUstrd = 23;
+	
+	private static final String SVCLVL_CODE_URGENT = "URGP";
+	private static final String SVCLVL_CODE_NONURGENT = "NURG";
 	
 	private static final String PERSON_ID_CODE_CUST = "CUST";
 	private static final String ESIS_DATE_FORMAT = "yyyyMMdd"; 
@@ -113,16 +115,18 @@ public class StubMain {
 		credit.setGrpHdr(header);
 
 		while (ds.next()) {
-			ds.getString(colNames[CreDtTm]);
-
 			PaymentTypeInformation19 type = new PaymentTypeInformation19();
+			ServiceLevel8Choice svcLvl = new ServiceLevel8Choice();
+			
 			int priority = ds.getInt(colNames[PmtTpInfInstrPrty]);
 			if (priority == 1) {
-				type.setInstrPrty(Priority2Code.NORM);
+				svcLvl.setCd(SVCLVL_CODE_NONURGENT);
 			} else if (priority == 2) {
-				type.setInstrPrty(Priority2Code.HIGH);
+				svcLvl.setCd(SVCLVL_CODE_URGENT);
 			}
+			type.setSvcLvl(svcLvl);
 
+			
 			// -- create new transfer payment instruction
 			PaymentInstructionInformation3 instr = new PaymentInstructionInformation3();
 			instr.setPmtInfId(UUID.randomUUID().toString().replaceAll("-", ""));

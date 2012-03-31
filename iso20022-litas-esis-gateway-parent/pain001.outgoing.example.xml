@@ -5,15 +5,17 @@
 	<Document>
 		<CstmrCdtTrfInitn>
 			<GrpHdr>
-				<MsgId>8998f846155d4f24b58def94c3e66c37</MsgId>
-				<CreDtTm>2012-03-31T10:21:05.533+03:00</CreDtTm>
+				<MsgId>125de0d9fa7d46f4a0bd6db05bfd1090</MsgId>
+				<CreDtTm>2012-03-31T10:45:57.086+03:00</CreDtTm>
 				<NbOfTxs>3</NbOfTxs>
 			</GrpHdr>
 			<PmtInf>
-				<PmtInfId>c040c2f69734472494926f3f136e7183</PmtInfId>
+				<PmtInfId>69b69193cbc6477c8fe0870d8754fc27</PmtInfId>
 				<PmtMtd>TRF</PmtMtd>
 				<PmtTpInf>
-					<InstrPrty>NORM</InstrPrty>
+					<SvcLvl>
+						<Cd>NURG</Cd>
+					</SvcLvl>
 				</PmtTpInf>
 				<ReqdExctnDt>2009-06-02T00:00:00.000+03:00</ReqdExctnDt>
 				<Dbtr>
@@ -64,10 +66,12 @@
 				</CdtTrfTxInf>
 			</PmtInf>
 			<PmtInf>
-				<PmtInfId>20f250ac895a4c56975d667e0fd82570</PmtInfId>
+				<PmtInfId>74c5d52bc21a4a258c119d7db9a6c580</PmtInfId>
 				<PmtMtd>TRF</PmtMtd>
 				<PmtTpInf>
-					<InstrPrty>NORM</InstrPrty>
+					<SvcLvl>
+						<Cd>NURG</Cd>
+					</SvcLvl>
 				</PmtTpInf>
 				<ReqdExctnDt>2009-06-02T00:00:00.000+03:00</ReqdExctnDt>
 				<Dbtr>
@@ -118,10 +122,12 @@
 				</CdtTrfTxInf>
 			</PmtInf>
 			<PmtInf>
-				<PmtInfId>9034eb6e2e9a4e13bd8e47724d69ac16</PmtInfId>
+				<PmtInfId>07154d2f84f04885b947be6f486541ee</PmtInfId>
 				<PmtMtd>TRF</PmtMtd>
 				<PmtTpInf>
-					<InstrPrty>HIGH</InstrPrty>
+					<SvcLvl>
+						<Cd>URGP</Cd>
+					</SvcLvl>
 				</PmtTpInf>
 				<ReqdExctnDt>2009-06-02T00:00:00.000+03:00</ReqdExctnDt>
 				<Dbtr>
@@ -171,7 +177,7 @@
 						<InstrId>181</InstrId>
 					</PmtId>
 					<Amt>
-						<InstdAmt Ccy="LTL">166.0</InstdAmt>
+						<InstdAmt Ccy="LTL">1.66</InstdAmt>
 					</Amt>
 					<CdtrAgt>
 						<FinInstnId>
@@ -214,13 +220,13 @@
 						<Prtry>1001</Prtry>
 					</Purp>
 					<RmtInf>
-						<Ustrd>Lorem ipsum dolor sit amet, consectetur adipiscing elit.
-							Vestibulum vehicula accumsan purus quis pretium. Aliquam ut
-							laoreet erat. Quisque c</Ustrd>
-						<Ustrd>ommodo porta est. Fusce ornare semper arcu ultricies
-							suscipit. Vestibulum euismod porta pretium. Nullam dapibus
-							ultrices eros, ac scelerisqu</Ustrd>
-						<Ustrd>e justo posuere sed.</Ustrd>
+						<Ustrd>Lorem ipsum dolor sit amet, consectetur adipiscing elit. Ut
+							ut tortor a lorem faucibus auctor pharetra sed sem. Praesent et
+							arcu non quam su</Ustrd>
+						<Ustrd>scipit lobortis. Nullam congue neque a enim ornare
+							ultrices. Pellentesque nisi felis, molestie a suscipit ac,
+							pellentesque porta elit. Nulla</Ustrd>
+						<Ustrd> pulvinar cras amet.</Ustrd>
 					</RmtInf>
 				</CdtTrfTxInf>
 			</PmtInf>
