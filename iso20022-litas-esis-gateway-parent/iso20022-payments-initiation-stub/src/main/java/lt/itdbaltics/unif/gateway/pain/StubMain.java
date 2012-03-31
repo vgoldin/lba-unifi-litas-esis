@@ -330,7 +330,7 @@ public class StubMain {
 				prvtId.getOthr().add(otherId);
 
 				if (hasValue(partyIdOtherIdAdditionalStr)) {
-					GenericPersonIdentification1 otherCustId = getPersonCustId(partyIdOtherIdAdditionalStr, additionalSchmeNmCodeCdStr);
+					GenericPersonIdentification1 otherCustId = getPersonAdditionalId(partyIdOtherIdAdditionalStr, additionalSchmeNmCodeCdStr);
 
 					prvtId.getOthr().add(otherCustId);
 				}
@@ -368,21 +368,38 @@ public class StubMain {
 		otherCustId.setId(partyIdOtherIdCustStr);
 
 		OrganisationIdentificationSchemeName1Choice schmeNmCodeCd = new OrganisationIdentificationSchemeName1Choice();
-		schmeNmCodeCd.setCd(schmeNmCodeCdStr);
+
+		if (!isProprietaryCode(schmeNmCodeCdStr)) {
+			schmeNmCodeCd.setCd(schmeNmCodeCdStr);
+		} else {
+			schmeNmCodeCd.setPrtry(schmeNmCodeCdStr);
+		}
+
 		otherCustId.setSchmeNm(schmeNmCodeCd);
 		
 		return otherCustId;
 	}
 
-	private GenericPersonIdentification1 getPersonCustId(String partyIdOtherIdCUSTStr, String schmeNmCodeCdStr) {
-		GenericPersonIdentification1 otherCUSTId = new GenericPersonIdentification1();
-		otherCUSTId.setId(partyIdOtherIdCUSTStr);
+	private GenericPersonIdentification1 getPersonAdditionalId(String otherIdAdditionalStr, String schmeNmCodeCdStr) {
+		GenericPersonIdentification1 otherAdditionalId = new GenericPersonIdentification1();
+		otherAdditionalId.setId(otherIdAdditionalStr);
 
 		PersonIdentificationSchemeName1Choice schmeNmCodeCd = new PersonIdentificationSchemeName1Choice();
-		schmeNmCodeCd.setCd(schmeNmCodeCdStr);
-		otherCUSTId.setSchmeNm(schmeNmCodeCd);
 		
-		return otherCUSTId;
+		if (!isProprietaryCode(schmeNmCodeCdStr)) {
+			schmeNmCodeCd.setCd(schmeNmCodeCdStr);
+		} else {
+			schmeNmCodeCd.setPrtry(schmeNmCodeCdStr);
+		}
+		
+		otherAdditionalId.setSchmeNm(schmeNmCodeCd);
+		
+		return otherAdditionalId;
+	}
+
+	private boolean isProprietaryCode(String schmeNmCodeCdStr) {
+		// -- in the future we can create a list of used Codes from external list and check against the list instead
+		return !schmeNmCodeCdStr.equals(PERSON_ID_CODE_CUST);
 	}
 
 	private XMLGregorianCalendar getReqdExctnDt(String reqdExctnDtStr) throws DatatypeConfigurationException, ParseException {

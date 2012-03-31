@@ -5,12 +5,12 @@
 	<Document>
 		<CstmrCdtTrfInitn>
 			<GrpHdr>
-				<MsgId>125de0d9fa7d46f4a0bd6db05bfd1090</MsgId>
-				<CreDtTm>2012-03-31T10:45:57.086+03:00</CreDtTm>
+				<MsgId>b8bf620438884a5cb750df3583fc045a</MsgId>
+				<CreDtTm>2012-03-31T11:01:23.014+03:00</CreDtTm>
 				<NbOfTxs>3</NbOfTxs>
 			</GrpHdr>
 			<PmtInf>
-				<PmtInfId>69b69193cbc6477c8fe0870d8754fc27</PmtInfId>
+				<PmtInfId>66ce13e2c40944a48e07d1d84a8069c5</PmtInfId>
 				<PmtMtd>TRF</PmtMtd>
 				<PmtTpInf>
 					<SvcLvl>
@@ -66,7 +66,7 @@
 				</CdtTrfTxInf>
 			</PmtInf>
 			<PmtInf>
-				<PmtInfId>74c5d52bc21a4a258c119d7db9a6c580</PmtInfId>
+				<PmtInfId>8c8a44fed997470fb9a63c3b394a6d61</PmtInfId>
 				<PmtMtd>TRF</PmtMtd>
 				<PmtTpInf>
 					<SvcLvl>
@@ -122,7 +122,7 @@
 				</CdtTrfTxInf>
 			</PmtInf>
 			<PmtInf>
-				<PmtInfId>07154d2f84f04885b947be6f486541ee</PmtInfId>
+				<PmtInfId>305eb4866fc447d398cb10d2dbab3418</PmtInfId>
 				<PmtMtd>TRF</PmtMtd>
 				<PmtTpInf>
 					<SvcLvl>
@@ -166,7 +166,7 @@
 							<Othr>
 								<Id>LT827044060004726595</Id>
 								<SchmeNm>
-									<Cd>IBAN</Cd>
+									<Prtry>IBAN</Prtry>
 								</SchmeNm>
 							</Othr>
 						</OrgId>
@@ -210,7 +210,7 @@
 								<Othr>
 									<Id>LT827044060004726594</Id>
 									<SchmeNm>
-										<Cd>IBAN</Cd>
+										<Prtry>IBAN</Prtry>
 									</SchmeNm>
 								</Othr>
 							</OrgId>
