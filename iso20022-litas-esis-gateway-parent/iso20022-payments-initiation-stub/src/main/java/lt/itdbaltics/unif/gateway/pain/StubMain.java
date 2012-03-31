@@ -62,7 +62,6 @@ import lt.lba.xmlns._2011._11.unifi.customercredittransferinitiation.v03.ObjectF
 import lt.lba.xmlns._2011._11.unifi.customercredittransferinitiation.v03.SignableDocumentType;
 
 public class StubMain {
-	private static final String ULTIMATE_PARTY_ID_CODE_IBAN = "IBAN";
 	private static final int CdtTrfTxInfPmtId = 0;
 	private static final int ReqdExctnDt = 2;
 	private static final int PmtTpInfInstrPrty = 3;
@@ -91,6 +90,7 @@ public class StubMain {
 	private static final String SVCLVL_CODE_NONURGENT = "NURG";
 	
 	private static final String PERSON_ID_CODE_CUST = "CUST";
+	private static final String ULTIMATE_PARTY_ID_CODE_IBAN = "IBAN";
 	private static final String ESIS_DATE_FORMAT = "yyyyMMdd"; 
 	
 	public StubMain() throws UnsupportedEncodingException, DatatypeConfigurationException, ParseException, Exception, Exception {
@@ -174,6 +174,7 @@ public class StubMain {
 			String cdtTrfTxInfPmtIdStr = ds.getString(colNames[CdtTrfTxInfPmtId]);
 			PaymentIdentification1 pmtId = new PaymentIdentification1();
 			pmtId.setInstrId(cdtTrfTxInfPmtIdStr);
+			pmtId.setEndToEndId(cdtTrfTxInfPmtIdStr);
 			cdtTrfTxInf.setPmtId(pmtId);
 			
 			// -- set creditor
