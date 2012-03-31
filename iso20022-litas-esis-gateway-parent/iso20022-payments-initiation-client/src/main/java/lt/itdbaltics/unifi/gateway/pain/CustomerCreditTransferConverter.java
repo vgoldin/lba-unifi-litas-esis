@@ -34,7 +34,6 @@ import java.util.Date;
 import java.util.GregorianCalendar;
 import java.util.Iterator;
 import java.util.List;
-import java.util.Map;
 import java.util.UUID;
 
 import javax.xml.bind.JAXBContext;
@@ -68,8 +67,13 @@ public class CustomerCreditTransferConverter {
 	private static final String ULTIMATE_PARTY_ID_CODE_IBAN = "IBAN";
 	private static final String ESIS_DATE_FORMAT = "yyyyMMdd";
 
-	public static void convertMokesisToCustomerCreditTransfer(List<Map<String, Object>> rows, OutputStream stream) {
-		
+	public static void convertToCustomerCreditTransferAndSerialize(List<LitasPaymentDto> rows, OutputStream stream) {
+		SignableDocumentType signableType = convertToSignableDocumentType(rows);
+
+		serializeResults(signableType, stream);
+	}
+
+	public static SignableDocumentType convertToSignableDocumentType(List<LitasPaymentDto> rows) {
 		XMLGregorianCalendar createDate = createXMLGregorianCalendar(new Date());
 
 		GroupHeader32 header = new GroupHeader32();
@@ -80,15 +84,15 @@ public class CustomerCreditTransferConverter {
 		CustomerCreditTransferInitiationV03 credit = new CustomerCreditTransferInitiationV03();
 		credit.setGrpHdr(header);
 
-		Iterator<Map<String, Object>> it = rows.iterator();
+		Iterator<LitasPaymentDto> it = rows.iterator();
 
 		while (it.hasNext()) {
-			Map<String, Object> row = it.next();
+			LitasPaymentDto row = it.next();
 
 			PaymentTypeInformation19 type = new PaymentTypeInformation19();
 			ServiceLevel8Choice svcLvl = new ServiceLevel8Choice();
 
-			int priority = Integer.valueOf((String) row.get(Columns.PmtTpInfInstrPrty));
+			int priority = Integer.valueOf(row.getPriority());
 			if (priority == 1) {
 				svcLvl.setCd(SVCLVL_CODE_NONURGENT);
 			} else if (priority == 2) {
@@ -103,77 +107,74 @@ public class CustomerCreditTransferConverter {
 			instr.setPmtTpInf(type);
 
 			// -- set requested execution date
-			String reqdExctnDtStr = (String) row.get(Columns.ReqdExctnDt);
+			String reqdExctnDtStr = row.getValueDate();
 			if (hasValue(reqdExctnDtStr)) {
 				instr.setReqdExctnDt(getReqdExctnDt(reqdExctnDtStr));
 			}
 
 			// -- set debtor account
 			AccountIdentification4Choice dbtrAcctIdIBAN = new AccountIdentification4Choice();
-			dbtrAcctIdIBAN.setIBAN((String) row.get(Columns.DbtrAcctIdIBAN));
+			dbtrAcctIdIBAN.setIBAN(row.getPayerAccount());
 
 			CashAccount16 dbtrAcct = new CashAccount16();
 			dbtrAcct.setId(dbtrAcctIdIBAN);
 			instr.setDbtrAcct(dbtrAcct);
 
 			// -- set debtor
-			PartyIdentification32 dbtr = createParty((String) row.get(Columns.DbtrNm), (String) row.get(Columns.DbtrIdOtherId), (String) row.get(Columns.DbtrIdOtherIdCUST),
-					PERSON_ID_CODE_CUST);
+			PartyIdentification32 dbtr = createParty(row.getPayerName(), row.getPayerId(), row.getCustomerCodeInBeneficiaryIs(), PERSON_ID_CODE_CUST);
 			instr.setDbtr(dbtr);
 
 			// -- set debtor agent
-			String dbtrAgtFinInstnIdBICStr = (String) row.get(Columns.DbtrAgtFinInstnIdBIC);
+			String dbtrAgtFinInstnIdBICStr = row.getPayerCreditInstitution();
 			if (hasValue(dbtrAgtFinInstnIdBICStr)) {
 				instr.setDbtrAgt(getFinInstnId(dbtrAgtFinInstnIdBICStr));
 			}
 
 			// -- set ultimate debtor
-			PartyIdentification32 ultmtDbtr = createParty((String) row.get(Columns.UltmtDbtrNm), (String) row.get(Columns.UltmtDbtrIdOtherId),
-					(String) row.get(Columns.UltmtDbtrIdOtherIdIBAN), ULTIMATE_PARTY_ID_CODE_IBAN);
+			PartyIdentification32 ultmtDbtr = createParty(row.getOriginatorName(), row.getOriginatorId(), row.getOriginatorAccount(), ULTIMATE_PARTY_ID_CODE_IBAN);
 			if (ultmtDbtr != null) {
 				instr.setUltmtDbtr(ultmtDbtr);
 			}
 
 			// -- set creditor account
 			AccountIdentification4Choice cdtrAcctIdIBAN = new AccountIdentification4Choice();
-			cdtrAcctIdIBAN.setIBAN((String) row.get(Columns.CdtrAcctIdIBAN));
+			cdtrAcctIdIBAN.setIBAN(row.getBeneficiaryAccount());
 
 			CreditTransferTransactionInformation10 cdtTrfTxInf = new CreditTransferTransactionInformation10();
 
 			// -- set credit transfer number
-			String cdtTrfTxInfPmtIdStr = (String) row.get(Columns.CdtTrfTxInfPmtId);
+			String cdtTrfTxInfPmtIdStr = row.getDocumentNumber();
 			PaymentIdentification1 pmtId = new PaymentIdentification1();
 			pmtId.setInstrId(cdtTrfTxInfPmtIdStr);
 			pmtId.setEndToEndId(cdtTrfTxInfPmtIdStr);
 			cdtTrfTxInf.setPmtId(pmtId);
 
 			// -- set creditor
-			PartyIdentification32 cdtr = createParty((String) row.get(Columns.CdtrNm), (String) row.get(Columns.CdtrIdOtherId), (String) row.get(Columns.CdtrIdOtherIdCUST),
-					PERSON_ID_CODE_CUST);
+			PartyIdentification32 cdtr = createParty(row.getBenificiaryName(), row.getBenificiaryId(), row.getCustomerCodeInPayerIs(), PERSON_ID_CODE_CUST);
 			cdtTrfTxInf.setCdtr(cdtr);
 
 			// -- set creditor agent
-			String cdtrAgtFinInstnIdBICStr = (String) row.get(Columns.CdtrAgtFinInstnIdBIC);
+			String cdtrAgtFinInstnIdBICStr = row.getBenificiaryCreditInsitution();
 			if (hasValue(cdtrAgtFinInstnIdBICStr)) {
 				cdtTrfTxInf.setCdtrAgt(getFinInstnId(cdtrAgtFinInstnIdBICStr));
 			}
 
 			// -- set ultimate creditor
-			PartyIdentification32 ultmtCdtr = createParty((String) row.get(Columns.UltmtCdtrNm), (String) row.get(Columns.UltmtCdtrIdOtherId),
-					(String) row.get(Columns.UltmtCdtrIdOtherIdIBAN), ULTIMATE_PARTY_ID_CODE_IBAN);
+			PartyIdentification32 ultmtCdtr = createParty(row.getBenificiaryName(), row.getBenificiaryPartyId(),
+					row.getBeneficiaryPartyAccount(), ULTIMATE_PARTY_ID_CODE_IBAN);
 			if (ultmtCdtr != null) {
 				cdtTrfTxInf.setUltmtCdtr(ultmtCdtr);
 			}
 
 			// -- set amount
-			AmountType3Choice amt = createAmount((String) row.get(Columns.AmtInstdAmt), (String) row.get(Columns.AmtInstdAmtCcy));
+			AmountType3Choice amt = createAmount(row.getAmount(), row.getCurrencyCode());
 			cdtTrfTxInf.setAmt(amt);
 
 			// -- set purpose code (purpose is not the same as remittance!
 			// Remittance is to identify particular instruction relation to the
 			// particular invoice, whenever purpose is a static value, defining
 			// the category of the payment)
-			String purpPrtryStr = (String) row.get(Columns.PurpPrtry);
+			String purpPrtryStr = row.getReferenceNo();
 			if (hasValue(purpPrtryStr)) {
 				Purpose2Choice purp = new Purpose2Choice();
 				purp.setPrtry(purpPrtryStr);
@@ -182,7 +183,7 @@ public class CustomerCreditTransferConverter {
 			}
 
 			// -- set unstructured remittance information
-			RemittanceInformation5 rmtInf = createRmtInf((String) row.get(Columns.RmtInfUstrd));
+			RemittanceInformation5 rmtInf = createRmtInf(row.getPaymentDetails());
 			cdtTrfTxInf.setRmtInf(rmtInf);
 
 			// -- add credit transfer transaction information (credit part) to
@@ -199,21 +200,20 @@ public class CustomerCreditTransferConverter {
 
 		SignableDocumentType signableType = new SignableDocumentType();
 		signableType.setDocument(document);
-
-		serializeResults(signableType, stream);
+		return signableType;
 	}
 
 	private static XMLGregorianCalendar createXMLGregorianCalendar(Date currentDateTime) {
 		GregorianCalendar calendar = new GregorianCalendar();
 		calendar.setTime(currentDateTime);
-		
+
 		XMLGregorianCalendar createDate;
 		try {
 			createDate = DatatypeFactory.newInstance().newXMLGregorianCalendar(calendar);
 		} catch (DatatypeConfigurationException e) {
 			throw new RuntimeException(e);
 		}
-		
+
 		return createDate;
 	}
 
@@ -361,7 +361,7 @@ public class CustomerCreditTransferConverter {
 		return partyIdOtherId;
 	}
 
-	private static  boolean hasValue(String str) {
+	private static boolean hasValue(String str) {
 		return str != null && !str.isEmpty();
 	}
 
@@ -413,14 +413,14 @@ public class CustomerCreditTransferConverter {
 
 			GregorianCalendar calendar = new GregorianCalendar();
 			calendar.setTime(date);
-			
+
 			reqdExctnDt = DatatypeFactory.newInstance().newXMLGregorianCalendar(calendar);
 		} catch (ParseException e) {
 			throw new RuntimeException(e);
 		} catch (DatatypeConfigurationException e) {
 			throw new RuntimeException(e);
 		}
-		
+
 		return reqdExctnDt;
 	}
 }

@@ -9,8 +9,8 @@
 		<camel:route id="handleMokesisFile">
 			<camel:from
 				uri="file:src/data/outgoing?autoCreate=true&amp;charset=windows-1257&amp;move=.done&amp;moveFailed=.error" />
-			<camel:unmarshal ref="mokesisFlatpack" />
 			<camel:log message="Processing outgoing LITAS payments file (${headers.CamelFileNameOnly}) ..." />
+			<camel:unmarshal ref="mokesisFlatpack" />
 			<camel:marshal ref="cstmrCdtTrfInitnXML" />
 			<camel:convertBodyTo type="java.lang.String" />
 			<camel:to uri="file:target/messages" />

@@ -1,5 +1,6 @@
 package lt.itdbaltics.unifi.gateway.pain;
 
+//TODO: Change names to reflect LITAS-ESIS naming instead of ISO20022 naming
 public class Columns {
 	public static final String CdtTrfTxInfPmtId = "CdtTrfTxInfPmtId";
 	public static final String ReqdExctnDt = "ReqdExctnDt";

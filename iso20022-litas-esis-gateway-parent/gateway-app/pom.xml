@@ -123,7 +123,7 @@
     </dependency>
     <dependency>
     	<groupId>lt.itdbaltics.unifi.services.pain</groupId>
-    	<artifactId>iso20022-payments-initiation-client</artifactId>
+    	<artifactId>unifi-pain-client</artifactId>
     	<version>0.0.1-SNAPSHOT</version>
     	<type>jar</type>
     	<scope>compile</scope>
