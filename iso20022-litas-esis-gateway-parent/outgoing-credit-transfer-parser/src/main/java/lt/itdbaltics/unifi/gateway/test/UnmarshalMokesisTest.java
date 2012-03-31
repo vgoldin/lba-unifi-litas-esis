@@ -3,6 +3,7 @@ package lt.itdbaltics.unifi.gateway.test;
 import java.io.BufferedReader;
 import java.io.InputStream;
 import java.io.InputStreamReader;
+import java.io.UnsupportedEncodingException;
 import java.util.Iterator;
 
 import net.sf.flatpack.DataError;
@@ -18,7 +19,7 @@ public class UnmarshalMokesisTest {
 	}
 
 	public static String getDefaultDataFile() {
-		return "sample-mokesis.txt";
+		return "geras_mano_100_3.mokesis";
 	}
 
 	public static String getDefaultMapping() {
@@ -27,17 +28,7 @@ public class UnmarshalMokesisTest {
 
 	public static void parse(final String mapping, final String data)
 			throws Exception {
-		InputStream mappingIs = UnmarshalMokesisTest.class.getClassLoader()
-				.getResourceAsStream(mapping);
-		InputStream dataIs = UnmarshalMokesisTest.class.getClassLoader()
-				.getResourceAsStream(data);
-
-		final Parser pzparser = DefaultParserFactory.getInstance()
-				.newDelimitedParser(
-						new BufferedReader(new InputStreamReader(mappingIs)),
-						new BufferedReader(new InputStreamReader(dataIs, "windows-1257")),
-						'\t', '\0', false);
-		final DataSet ds = pzparser.parse();
+		final DataSet ds = parseToDataSet(mapping, data);
 
 		final String[] colNames = ds.getColumns();
 
@@ -62,5 +53,21 @@ public class UnmarshalMokesisTest {
 
 		}
 
+	}
+
+	public static DataSet parseToDataSet(final String mapping,
+			final String data) throws UnsupportedEncodingException {
+		InputStream mappingIs = UnmarshalMokesisTest.class.getClassLoader()
+				.getResourceAsStream(mapping);
+		InputStream dataIs = UnmarshalMokesisTest.class.getClassLoader()
+				.getResourceAsStream(data);
+
+		final Parser pzparser = DefaultParserFactory.getInstance()
+				.newDelimitedParser(
+						new BufferedReader(new InputStreamReader(mappingIs)),
+						new BufferedReader(new InputStreamReader(dataIs, "windows-1257")),
+						'\t', '\0', false);
+		final DataSet ds = pzparser.parse();
+		return ds;
 	}
 }
