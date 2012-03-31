@@ -18,7 +18,7 @@
 	<COLUMN name="CdtrIdOtherId" />
 	<COLUMN name="CdtrAgtFinInstnIdBIC" />
 	<COLUMN name="CdtrIdOtherIdCUST" />
-	<COLUMN name="UltmtIdOtherIdIBAN" />
+	<COLUMN name="UltmtCdtrIdOtherIdIBAN" />
 	<COLUMN name="UltmtCdtrNm" />
 	<COLUMN name="UltmtCdtrIdOtherId" />
 	<COLUMN name="AmtInstdAmt" />
