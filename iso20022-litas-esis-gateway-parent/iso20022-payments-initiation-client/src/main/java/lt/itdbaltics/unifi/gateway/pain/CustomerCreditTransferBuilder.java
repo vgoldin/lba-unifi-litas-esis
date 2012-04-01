@@ -25,7 +25,6 @@ import iso.std.iso._20022.tech.xsd.pain_001_001.Purpose2Choice;
 import iso.std.iso._20022.tech.xsd.pain_001_001.RemittanceInformation5;
 import iso.std.iso._20022.tech.xsd.pain_001_001.ServiceLevel8Choice;
 
-import java.io.OutputStream;
 import java.math.BigDecimal;
 import java.text.DateFormat;
 import java.text.ParseException;
@@ -36,30 +35,26 @@ import java.util.Iterator;
 import java.util.List;
 import java.util.UUID;
 
-import javax.xml.bind.JAXBContext;
-import javax.xml.bind.JAXBElement;
-import javax.xml.bind.JAXBException;
-import javax.xml.bind.Marshaller;
 import javax.xml.datatype.DatatypeConfigurationException;
 import javax.xml.datatype.DatatypeFactory;
 import javax.xml.datatype.XMLGregorianCalendar;
-import javax.xml.parsers.DocumentBuilder;
-import javax.xml.parsers.DocumentBuilderFactory;
-import javax.xml.parsers.ParserConfigurationException;
-import javax.xml.transform.Transformer;
-import javax.xml.transform.TransformerConfigurationException;
-import javax.xml.transform.TransformerException;
-import javax.xml.transform.TransformerFactory;
-import javax.xml.transform.TransformerFactoryConfigurationError;
-import javax.xml.transform.dom.DOMSource;
-import javax.xml.transform.stream.StreamResult;
-
-import org.w3c.dom.Document;
-
-import lt.lba.xmlns._2011._11.unifi.customercredittransferinitiation.v03.ObjectFactory;
 import lt.lba.xmlns._2011._11.unifi.customercredittransferinitiation.v03.SignableDocumentType;
 
-public class CustomerCreditTransferConverter {
+/**
+ * 
+ * Build <code>SignableDocument</code> JAXB type
+ * out of the provided list of LITAS-ESIS v1.2 Mokesis payments.
+ * 
+ * XAdES Signature part of the <code>SignableDocument</code> is not supported. 
+ * Only <code>CustomerCreditTransferInitiationV03</code> part (Document) is support currently.
+ * 
+ * Each payment in the <code>List</code> corresponds to the 
+ * <code>PaymentInformation</code> item in the resulting JAXB graph.  
+ * 
+ * @author vgoldin
+ *
+ */
+public class CustomerCreditTransferBuilder {
 	private static final String SVCLVL_CODE_URGENT = "URGP";
 	private static final String SVCLVL_CODE_NONURGENT = "NURG";
 
@@ -67,13 +62,11 @@ public class CustomerCreditTransferConverter {
 	private static final String ULTIMATE_PARTY_ID_CODE_IBAN = "IBAN";
 	private static final String ESIS_DATE_FORMAT = "yyyyMMdd";
 
-	public static void convertToCustomerCreditTransferAndSerialize(List<LitasPaymentDto> rows, OutputStream stream) {
-		SignableDocumentType signableType = convertToSignableDocumentType(rows);
-
-		serializeResults(signableType, stream);
-	}
-
 	public static SignableDocumentType convertToSignableDocumentType(List<LitasPaymentDto> rows) {
+		if (rows == null || rows.size() < 1) {
+			throw new IllegalArgumentException("List of LITAS-ESIS payments should be provided with at least one payment in the list."); 
+		}
+		
 		XMLGregorianCalendar createDate = createXMLGregorianCalendar(new Date());
 
 		GroupHeader32 header = new GroupHeader32();
@@ -276,36 +269,6 @@ public class CustomerCreditTransferConverter {
 		}
 
 		return party;
-	}
-
-	private static void serializeResults(SignableDocumentType signableType, OutputStream stream) {
-		try {
-			DocumentBuilderFactory dbfac = DocumentBuilderFactory.newInstance();
-			DocumentBuilder docBuilder = dbfac.newDocumentBuilder();
-			Document doc = docBuilder.newDocument();
-
-			ObjectFactory of = new ObjectFactory();
-			JAXBElement<SignableDocumentType> signable = of.createSignableDocument(signableType);
-			signable.setValue(signableType);
-
-			JAXBContext context = JAXBContext.newInstance(SignableDocumentType.class);
-			Marshaller marshaller = context.createMarshaller();
-			marshaller.marshal(signable, doc);
-
-			Transformer transformer = TransformerFactory.newInstance().newTransformer();
-			StreamResult result = new StreamResult(stream);
-			transformer.transform(new DOMSource(doc), result);
-		} catch (ParserConfigurationException e) {
-			throw new RuntimeException(e);
-		} catch (JAXBException e) {
-			throw new RuntimeException(e);
-		} catch (TransformerConfigurationException e) {
-			throw new RuntimeException(e);
-		} catch (TransformerFactoryConfigurationError e) {
-			throw new RuntimeException(e);
-		} catch (TransformerException e) {
-			throw new RuntimeException(e);
-		}
 	}
 
 	private static BranchAndFinancialInstitutionIdentification4 getFinInstnId(String finInstnIdBICStr) {

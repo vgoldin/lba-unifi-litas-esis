@@ -22,7 +22,7 @@ import javax.xml.ws.Dispatch;
 import javax.xml.ws.Service;
 import javax.xml.ws.handler.MessageContext;
 
-import lt.itdbaltics.unifi.gateway.pain.CustomerCreditTransferConverter;
+import lt.itdbaltics.unifi.gateway.pain.CustomerCreditTransferBuilder;
 import lt.itdbaltics.unifi.gateway.pain.LitasPaymentDto;
 import lt.lba.xmlns._2011._11.unifi.customercredittransferinitiation.v03.ObjectFactory;
 import lt.lba.xmlns._2011._11.unifi.customercredittransferinitiation.v03.SignableDocumentType;
@@ -89,7 +89,7 @@ public class Client {
 	}
 	
 	private static Document buildInputDocument(List<LitasPaymentDto> rows) throws Exception {
-		SignableDocumentType signableType = CustomerCreditTransferConverter.convertToSignableDocumentType(rows);
+		SignableDocumentType signableType = CustomerCreditTransferBuilder.convertToSignableDocumentType(rows);
 		
 		DocumentBuilderFactory dbfac = DocumentBuilderFactory.newInstance();
 		DocumentBuilder docBuilder = dbfac.newDocumentBuilder();
