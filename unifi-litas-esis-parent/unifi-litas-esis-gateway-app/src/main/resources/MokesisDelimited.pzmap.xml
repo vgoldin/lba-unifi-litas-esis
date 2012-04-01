@@ -1,0 +1,29 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE PZMAP SYSTEM	"http://flatpack.sourceforge.net/flatpack.dtd" >
+<PZMAP>
+	<COLUMN name="CdtTrfTxInfPmtId" />
+	<COLUMN name="CreDtTm" />
+	<COLUMN name="ReqdExctnDt" />
+	<COLUMN name="PmtTpInfInstrPrty" />
+	<COLUMN name="DbtrAcctIdIBAN" />
+	<COLUMN name="DbtrNm" />
+	<COLUMN name="DbtrIdOtherId" />
+	<COLUMN name="DbtrAgtFinInstnIdBIC" />
+	<COLUMN name="DbtrIdOtherIdCUST" />
+	<COLUMN name="UltmtDbtrIdOtherIdIBAN" />
+	<COLUMN name="UltmtDbtrNm" />
+	<COLUMN name="UltmtDbtrIdOtherId" />
+	<COLUMN name="CdtrAcctIdIBAN" />
+	<COLUMN name="CdtrNm" />
+	<COLUMN name="CdtrIdOtherId" />
+	<COLUMN name="CdtrAgtFinInstnIdBIC" />
+	<COLUMN name="CdtrIdOtherIdCUST" />
+	<COLUMN name="UltmtCdtrIdOtherIdIBAN" />
+	<COLUMN name="UltmtCdtrNm" />
+	<COLUMN name="UltmtCdtrIdOtherId" />
+	<COLUMN name="AmtInstdAmt" />
+	<COLUMN name="AmtInstdAmtCcy" />
+	<COLUMN name="PurpPrtry" /> <!-- RmtInfCdtrRefInfRef -->
+	<COLUMN name="RmtInfUstrd" />
+	<COLUMN name="SKIP_ArchiveId" />
+</PZMAP>
