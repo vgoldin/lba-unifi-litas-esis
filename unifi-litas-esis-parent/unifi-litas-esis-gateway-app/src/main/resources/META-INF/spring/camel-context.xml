@@ -5,7 +5,7 @@
        http://www.springframework.org/schema/beans http://www.springframework.org/schema/beans/spring-beans.xsd
        http://camel.apache.org/schema/spring http://camel.apache.org/schema/spring/camel-spring.xsd">
 
-	<camel:camelContext xmlns="http://camel.apache.org/schema/spring">
+	<camel:camelContext xmlns="http://camel.apache.org/schema/spring" xmlns:urn="urn:iso:std:iso:20022:tech:xsd:pain.002.001.03">
 		<camel:route id="handleMokesisFile">
 			<camel:from
 				uri="file:src/data/outgoing?autoCreate=true&amp;charset=windows-1257&amp;move=.done&amp;moveFailed=.error" />
@@ -18,7 +18,10 @@
 				<camel:constant>http://0.0.0.0:8161/AsyncGateway</camel:constant>
 			</camel:setHeader>
 			<camel:to uri="cxf://http://dummy?dataFormat=PAYLOAD&amp;synchronous=true&amp;wsdlURL=classpath:wsdl/lba-unifi-PaymentsInitiation-Bank-V01.wsdl&amp;defaultOperationName=CustomerCreditTransferInitiationV03" />
-			<camel:to uri="file:src/data/outgoing/.stsrpt?fileName=${headers.CamelFileNameOnly}-${date:now:yyyyMMdd}.xml" />
+			<camel:setHeader headerName="CstmrPmtStsRptMsgId">
+				<camel:xpath>/urn:Document/urn:CstmrPmtStsRpt/urn:GrpHdr/urn:MsgId/text()</camel:xpath>
+			</camel:setHeader>
+			<camel:to uri="file:src/data/outgoing/.stsrpt?fileName=${date:now:yyyyMMdd}/${headers.CamelFileNameOnly}-${headers.CstmrPmtStsRptMsgId}.xml" />
 		</camel:route>
 	</camel:camelContext>
 
