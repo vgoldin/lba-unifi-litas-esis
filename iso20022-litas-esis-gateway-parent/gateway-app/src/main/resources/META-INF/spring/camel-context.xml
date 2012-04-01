@@ -13,7 +13,12 @@
 			<camel:unmarshal ref="mokesisFlatpack" />
 			<camel:marshal ref="cstmrCdtTrfInitnXML" />
 			<camel:convertBodyTo type="java.lang.String" />
-			<camel:to uri="file:target/messages" />
+			<camel:wireTap uri="file:target/messages" />			
+			<camel:setHeader headerName="CamelDestinationOverrideUrl">
+				<camel:constant>http://0.0.0.0:8161/AsyncGateway</camel:constant>
+			</camel:setHeader>
+			<camel:to uri="cxf://http://dummy?dataFormat=PAYLOAD&amp;synchronous=true&amp;wsdlURL=classpath:wsdl/lba-unifi-PaymentsInitiation-Bank-V01.wsdl&amp;defaultOperationName=CustomerCreditTransferInitiationV03" />
+			<camel:to uri="file:src/data/outgoing/.stsrpt?fileName=${headers.CamelFileNameOnly}-${date:now:yyyyMMdd}.xml" />
 		</camel:route>
 	</camel:camelContext>
 
@@ -24,4 +29,6 @@
 		<property name="delimiter" value="&#x0009;" />
 		<property name="ignoreFirstRecord" value="false" />
 	</bean>
+	
+	
 </beans>
