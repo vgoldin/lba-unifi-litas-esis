@@ -153,7 +153,7 @@ public class CustomerCreditTransferBuilder {
 			}
 
 			// -- set ultimate creditor
-			PartyIdentification32 ultmtCdtr = createParty(row.getBenificiaryName(), row.getBenificiaryPartyId(),
+			PartyIdentification32 ultmtCdtr = createParty(row.getBenificiaryPartyName(), row.getBenificiaryPartyId(),
 					row.getBeneficiaryPartyAccount(), ULTIMATE_PARTY_ID_CODE_IBAN);
 			if (ultmtCdtr != null) {
 				cdtTrfTxInf.setUltmtCdtr(ultmtCdtr);
