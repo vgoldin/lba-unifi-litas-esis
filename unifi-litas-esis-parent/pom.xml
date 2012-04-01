@@ -1,13 +1,26 @@
-<project xmlns="http://maven.apache.org/POM/4.0.0" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:schemaLocation="http://maven.apache.org/POM/4.0.0 http://maven.apache.org/xsd/maven-4.0.0.xsd">
-  <modelVersion>4.0.0</modelVersion>
-  <groupId>lt.itdbaltics.unifi</groupId>
-  <artifactId>unifi-litas-esis-parent</artifactId>
-  <name>LBA-UNIFI (ISO20022) Customer Kit</name>
-  <version>0.0.1-SNAPSHOT</version>
-  <packaging>pom</packaging>
-  <description>Lithuanian Banking Association ISO20022 addoption kit for Lithuanain bank's customers, including ready-to-use Web Services clients and LITAS-ESIS v1.2 to LBA-UNIFI Gateway</description>
-  <modules>
-  	<module>unifi-litas-esis-pain-client</module>
-  	<module>unifi-litas-esis-gateway-app</module>
-  </modules>
+<project xmlns="http://maven.apache.org/POM/4.0.0" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+	xsi:schemaLocation="http://maven.apache.org/POM/4.0.0 http://maven.apache.org/xsd/maven-4.0.0.xsd">
+	<modelVersion>4.0.0</modelVersion>
+	<groupId>lt.itdbaltics.unifi</groupId>
+	<artifactId>unifi-litas-esis-parent</artifactId>
+	<name>LBA-UNIFI (ISO20022) Customer Kit</name>
+	<version>0.0.1-SNAPSHOT</version>
+	<packaging>pom</packaging>
+	<description>Lithuanian Banking Association ISO20022 addoption kit for Lithuanain bank's customers, including ready-to-use Web Services clients and LITAS-ESIS v1.2 to LBA-UNIFI Gateway</description>
+	<modules>
+		<module>unifi-litas-esis-pain-client</module>
+		<module>unifi-litas-esis-gateway-app</module>
+	</modules>
+	<repositories>
+		<repository>
+			<id>http://repo1.maven.org</id>
+			<name>The Central Maven Repository</name>
+			<url>repo1.maven.org</url>
+			<snapshots>
+				<enabled>false</enabled>
+			</snapshots>
+			<releases>
+			</releases>
+		</repository>
+	</repositories>
 </project>
