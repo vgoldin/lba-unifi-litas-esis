@@ -1,37 +1,88 @@
 <?xml version="1.0" encoding="UTF-8"?>
 <beans xmlns="http://www.springframework.org/schema/beans"
 	xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xmlns:camel="http://camel.apache.org/schema/spring"
+	xmlns:cxfcore="http://cxf.apache.org/core" xmlns:wsa="http://cxf.apache.org/ws/addressing"
+	xmlns:http="http://cxf.apache.org/transports/http/configuration"
+	xmlns:cxf="http://camel.apache.org/schema/cxf"
 	xsi:schemaLocation="
+	   http://cxf.apache.org/core http://cxf.apache.org/schemas/core.xsd
+       http://cxf.apache.org/transports/http/configuration http://cxf.apache.org/schemas/configuration/http-conf.xsd
+	   http://camel.apache.org/schema/cxf http://camel.apache.org/schema/cxf/camel-cxf.xsd
        http://www.springframework.org/schema/beans http://www.springframework.org/schema/beans/spring-beans.xsd
        http://camel.apache.org/schema/spring http://camel.apache.org/schema/spring/camel-spring.xsd">
 
-	<camel:camelContext xmlns="http://camel.apache.org/schema/spring" xmlns:urn="urn:iso:std:iso:20022:tech:xsd:pain.002.001.03">
+	<camel:camelContext xmlns="http://camel.apache.org/schema/spring"
+		xmlns:urn="urn:iso:std:iso:20022:tech:xsd:pain.002.001.03">
 		<camel:route id="handleMokesisFile">
 			<camel:from
 				uri="file:src/data/outgoing?autoCreate=true&amp;charset=windows-1257&amp;move=.done&amp;moveFailed=.error" />
-			<camel:log message="Processing outgoing LITAS payments file (${headers.CamelFileNameOnly}) ..." />
+			<camel:log
+				message="Processing outgoing LITAS payments file (${headers.CamelFileNameOnly}) ..." />
 			<camel:unmarshal ref="mokesisFlatpack" />
 			<camel:marshal ref="cstmrCdtTrfInitnXML" />
 			<camel:convertBodyTo type="java.lang.String" />
-			<camel:wireTap uri="file:target/messages" />			
+			<camel:wireTap uri="file:target/messages" />
 			<camel:setHeader headerName="CamelDestinationOverrideUrl">
 				<camel:constant>http://0.0.0.0:8161/AsyncGateway</camel:constant>
 			</camel:setHeader>
-			<camel:to uri="cxf://http://dummy?dataFormat=PAYLOAD&amp;synchronous=true&amp;wsdlURL=classpath:wsdl/lba-unifi-PaymentsInitiation-Bank-V01.wsdl&amp;defaultOperationName=CustomerCreditTransferInitiationV03" />
+			<camel:to
+				uri="cxf://http://dummy?dataFormat=PAYLOAD&amp;synchronous=true&amp;wsdlURL=classpath:wsdl/lba-unifi-PaymentsInitiation-Bank-V01.wsdl&amp;defaultOperationName=CustomerCreditTransferInitiationV03&amp;bus=#bus" />
+			<camel:to uri="seda:CstmrOmtStsRpt" />
+		</camel:route>
+
+		<camel:route>
+			<camel:from
+				uri="cxf:bean:PaymentsInitiationV01Callback?dataFormat=PAYLOAD" />
+			<camel:to uri="seda:CstmrOmtStsRpt" />
+		</camel:route>
+
+		<camel:route>
+			<camel:from uri="seda:CstmrOmtStsRpt" />
 			<camel:setHeader headerName="CstmrPmtStsRptMsgId">
-				<camel:xpath>/urn:Document/urn:CstmrPmtStsRpt/urn:GrpHdr/urn:MsgId/text()</camel:xpath>
+				<camel:xpath>/urn:Document/urn:CstmrPmtStsRpt/urn:OrgnlGrpInfAndSts/urn:OrgnlMsgId/text()</camel:xpath>
 			</camel:setHeader>
-			<camel:to uri="file:src/data/outgoing/.stsrpt?fileName=${date:now:yyyyMMdd}/${headers.CamelFileNameOnly}-${headers.CstmrPmtStsRptMsgId}.xml" />
+			<camel:filter>
+				<camel:simple>${headers.CstmrPmtStsRptMsgId} != ''</camel:simple>
+				<camel:to
+					uri="file:src/data/outgoing/.stsrpt?fileName=${date:now:yyyyMMdd}/${headers.CamelFileNameOnly}-${headers.CstmrPmtStsRptMsgId}.xml" />
+				<!-- run transformation to create printable report -->
+			</camel:filter>
 		</camel:route>
 	</camel:camelContext>
 
-	<bean id="cstmrCdtTrfInitnXML" class="lt.itdbaltics.unifi.gateway.pain.CustomerCreditTransferDataFormat" />
-	
-	<bean class="org.apache.camel.component.flatpack.FlatpackDataFormat" id="mokesisFlatpack">
+	<cxf:cxfEndpoint id="PaymentsInitiationV01Callback"
+		bus="#bus" address="http://localhost:9990/callback" endpointName="s:PaymentsInitiationV01CallbackSOAP"
+		serviceName="s:PaymentsInitiationV01Callback" wsdlURL="wsdl/lba-unifi-PaymentsInitiation-Customer-V01.wsdl"
+		xmlns:s="urn:lt:lba:xmlns:unifi:services:PaymentsInitiation:V01">
+	</cxf:cxfEndpoint>
+
+	<bean id="cstmrCdtTrfInitnXML"
+		class="lt.itdbaltics.unifi.gateway.pain.CustomerCreditTransferDataFormat" />
+
+	<bean class="org.apache.camel.component.flatpack.FlatpackDataFormat"
+		id="mokesisFlatpack">
 		<property name="definition" value="classpath:MokesisDelimited.pzmap.xml" />
 		<property name="delimiter" value="&#x0009;" />
 		<property name="ignoreFirstRecord" value="false" />
 	</bean>
-	
-	
+
+	<http:conduit
+		name="{urn:lt:lba:xmlns:unifi:services:PaymentsInitiation:V01}PaymentsInitiationV01SOAP.http-conduit">
+		<http:client DecoupledEndpoint="http://localhost:9990/decoupled_endpoint" />
+	</http:conduit>
+
+	<cxfcore:bus bus="bus">
+		<cxfcore:features>
+			<wsa:addressing />
+		</cxfcore:features>
+
+		<cxfcore:properties>
+			<entry key="ws-security.callback-handler"
+				value="lt.lba.xmlns.unifi.services.paymentsinitiation.v01.wsse.ClientCallback" />
+			<entry key="ws-security.encryption.properties" value="client-crypto.properties" />
+			<entry key="ws-security.encryption.username" value="serverkey" />
+			<entry key="ws-security.signature.properties" value="client-crypto.properties" />
+			<entry key="ws-security.signature.username" value="clientkey" />
+		</cxfcore:properties>
+	</cxfcore:bus>
 </beans>
