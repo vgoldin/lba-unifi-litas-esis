@@ -10,10 +10,12 @@
 	<modules>
 		<module>unifi-litas-esis-pain-client</module>
 		<module>unifi-litas-esis-gateway-app</module>
+		<module>unifi-litas-esis-pain-builder</module>
+		<module>unifi-litas-esis-ws-security</module>
 	</modules>
 	<repositories>
 		<repository>
-			<id>http://repo1.maven.org</id>
+			<id>repo1.maven.org</id>
 			<name>The Central Maven Repository</name>
 			<url>repo1.maven.org</url>
 			<snapshots>
