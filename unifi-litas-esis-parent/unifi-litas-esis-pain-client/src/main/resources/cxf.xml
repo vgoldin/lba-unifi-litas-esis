@@ -19,20 +19,4 @@
 			<wsa:addressing />
 		</cxf:features>
 	</cxf:bus>
-
-	<jaxws:client
-		name="{urn:lt:lba:xmlns:unifi:services:PaymentsInitiation:V01}PaymentsInitiationV01SOAP"
-		createdFromAPI="true">
-		<jaxws:features>
-			<bean class="org.apache.cxf.feature.LoggingFeature" />
-		</jaxws:features>
-		<jaxws:properties>
-			<entry key="ws-security.callback-handler"
-				value="lt.lba.xmlns.unifi.services.paymentsinitiation.v01.wsse.ClientCallback" />
-			<entry key="ws-security.encryption.properties" value="client-crypto.properties" />
-			<entry key="ws-security.encryption.username" value="serverkey" />
-			<entry key="ws-security.signature.properties" value="client-crypto.properties" />
-			<entry key="ws-security.signature.username" value="clientkey" />
-		</jaxws:properties>
-	</jaxws:client>
 </beans>
