@@ -1,29 +1,29 @@
 <?xml version="1.0" encoding="UTF-8"?>
 <!DOCTYPE PZMAP SYSTEM	"http://flatpack.sourceforge.net/flatpack.dtd" >
 <PZMAP>
-	<COLUMN name="CdtTrfTxInfPmtId" />
-	<COLUMN name="CreDtTm" />
-	<COLUMN name="ReqdExctnDt" />
-	<COLUMN name="PmtTpInfInstrPrty" />
-	<COLUMN name="DbtrAcctIdIBAN" />
-	<COLUMN name="DbtrNm" />
-	<COLUMN name="DbtrIdOtherId" />
-	<COLUMN name="DbtrAgtFinInstnIdBIC" />
-	<COLUMN name="DbtrIdOtherIdCUST" />
-	<COLUMN name="UltmtDbtrIdOtherIdIBAN" />
-	<COLUMN name="UltmtDbtrNm" />
-	<COLUMN name="UltmtDbtrIdOtherId" />
-	<COLUMN name="CdtrAcctIdIBAN" />
-	<COLUMN name="CdtrNm" />
-	<COLUMN name="CdtrIdOtherId" />
-	<COLUMN name="CdtrAgtFinInstnIdBIC" />
-	<COLUMN name="CdtrIdOtherIdCUST" />
-	<COLUMN name="UltmtCdtrIdOtherIdIBAN" />
-	<COLUMN name="UltmtCdtrNm" />
-	<COLUMN name="UltmtCdtrIdOtherId" />
-	<COLUMN name="AmtInstdAmt" />
-	<COLUMN name="AmtInstdAmtCcy" />
-	<COLUMN name="PurpPrtry" /> <!-- RmtInfCdtrRefInfRef -->
-	<COLUMN name="RmtInfUstrd" />
+	<COLUMN name="DocumentNumber" />
+	<COLUMN name="Date" />
+	<COLUMN name="ValueDate" />
+	<COLUMN name="Priority" />
+	<COLUMN name="PayerAccount" />
+	<COLUMN name="PayerName" />
+	<COLUMN name="PayerId" />
+	<COLUMN name="PayerCreditInstitution" />
+	<COLUMN name="CustomerCodeInBeneficiaryIs" />
+	<COLUMN name="OriginatorAccount" />
+	<COLUMN name="OriginatorName" />
+	<COLUMN name="OriginatorId" />
+	<COLUMN name="BeneficiaryAccount" />
+	<COLUMN name="BenificiaryName" />
+	<COLUMN name="BenificiaryId" />
+	<COLUMN name="BenificiaryCreditInsitution" />
+	<COLUMN name="CustomerCodeInPayerIs" />
+	<COLUMN name="BeneficiaryPartyAccount" />
+	<COLUMN name="BenificiaryPartyName" />
+	<COLUMN name="BenificiaryPartyId" />
+	<COLUMN name="Amount" />
+	<COLUMN name="CurrencyCode" />
+	<COLUMN name="ReferenceNo" />
+	<COLUMN name="PaymentDetails" />
 	<COLUMN name="SKIP_ArchiveId" />
 </PZMAP>
